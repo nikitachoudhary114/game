@@ -1,232 +1,231 @@
-const shapes = [
-    [
-        [0,1,0,0],
-        [0,1,0,0],
-        [0,1,0,0],
-        [0,1,0,0]
-    ],
-    [
-        [0,1,0],
-        [0,1,0],
-        [1,1,0]
-    ],
-    [
-        [0,1,0],
-        [0,1,0],
-        [0,1,1]
-    ],
-    [
-        [1,1,0],
-        [0,1,1],
-        [0,0,0]
-    ],
-    [
-        [0,1,1],
-        [1,1,0],
-        [0,0,0]
-    ],
-    [
-        [1,1,1],
-        [0,1,0],
-        [0,0,0]
-    ],
-    [
-        [1,1],
-        [1,1]
-    ]
-]
+const tiles = document.querySelectorAll(".tile");
+const levelEl = document.getElementById("level");
+const bestEl = document.getElementById("best");
+const livesEl = document.getElementById("lives");
+const forestEl = document.getElementById("forest");
+const messageEl = document.getElementById("message");
+const startBtn = document.getElementById("startBtn");
 
-const colours = [
-    "#fff",
-    "#9b5fe0",
-    "#16a4d8",
-    "#60dbe8",
-    "#8bd346",
-    "#efdf48",
-    "#f9a52c",
-    "#d64e12"
-]
+let sequence = [];
+let playerSequence = [];
+let level = 0;
+let lives = 3;
+let canClick = false;
 
-const rows = 20;
-const cols = 10;
+let bestScore =
+    Number(localStorage.getItem("memoryBest")) || 0;
 
-let canvas = document.querySelector("#tetris");
-let scoreBoard = document.querySelector("h2");
-let ctx = canvas.getContext("2d");
-ctx.scale(30, 30);
+bestEl.textContent = bestScore;
 
-function generateRandomPiece() {
-    let ran = Math.floor(Math.random() * 7);
-    let piece = shapes[ran];
-    let colourIndex = ran + 1;
-    let x = 4;
-    let y = 0;
-    return {piece, x, y, colourIndex}
+const audioCtx =
+    new (window.AudioContext || window.webkitAudioContext)();
+
+const frequencies = [220, 330, 440, 550];
+
+function playSound(freq){
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = freq;
+    osc.type = "sine";
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    gain.gain.value = 0.15;
+
+    osc.start();
+
+    setTimeout(()=>{
+        osc.stop();
+    },150);
 }
 
-let pieceObj = null;
-let grid = generateGrid();
-let score = 0;
-console.log(pieceObj);
+function updateForest(){
 
-function renderPiece() {
-    let piece = pieceObj.piece;
-    for(let i=0; i<piece.length; i++) {
-        for(let j=0; j<piece[i].length; j++){
-            if(piece[i][j] == 1) {
-            ctx.fillStyle = colours[pieceObj.colourIndex];
-            ctx.fillRect(pieceObj.x+j, pieceObj.y+i, 1, 1);
+    if(level < 5){
+        forestEl.textContent = "🌱";
+    }
+    else if(level < 10){
+        forestEl.textContent = "🌿";
+    }
+    else if(level < 15){
+        forestEl.textContent = "🌳";
+    }
+    else if(level < 25){
+        forestEl.textContent = "🌲";
+    }
+    else{
+        forestEl.textContent = "👑";
+    }
+}
+
+function flashTile(index){
+
+    const tile = tiles[index];
+
+    tile.classList.add("active");
+
+    playSound(frequencies[index]);
+
+    setTimeout(()=>{
+        tile.classList.remove("active");
+    },350);
+}
+
+function playSequence(){
+
+    canClick = false;
+
+    let i = 0;
+
+    const interval = setInterval(()=>{
+
+        flashTile(sequence[i]);
+
+        i++;
+
+        if(i >= sequence.length){
+
+            clearInterval(interval);
+
+            setTimeout(()=>{
+                canClick = true;
+                messageEl.textContent = "Your Turn!";
+            },500);
+        }
+
+    },700);
+}
+
+function nextLevel(){
+
+    playerSequence = [];
+
+    level++;
+
+    levelEl.textContent = level;
+
+    updateForest();
+
+    sequence.push(
+        Math.floor(Math.random() * 4)
+    );
+
+    messageEl.textContent =
+        "Watch Carefully...";
+
+    setTimeout(()=>{
+        playSequence();
+    },500);
+}
+
+function startGame(){
+
+    sequence = [];
+    playerSequence = [];
+    level = 0;
+    lives = 3;
+
+    livesEl.textContent = "❤️❤️❤️";
+
+    forestEl.classList.remove("gameover");
+
+    nextLevel();
+}
+
+function gameOver(){
+
+    canClick = false;
+
+    if(level > bestScore){
+
+        bestScore = level;
+
+        localStorage.setItem(
+            "memoryBest",
+            bestScore
+        );
+
+        bestEl.textContent = bestScore;
+
+        messageEl.textContent =
+            "🏆 New High Score!";
+    }
+    else{
+
+        messageEl.textContent =
+            `Game Over! Reached Level ${level}`;
+    }
+
+    forestEl.classList.add("gameover");
+}
+
+tiles.forEach(tile=>{
+
+    tile.addEventListener("click",()=>{
+
+        if(!canClick) return;
+
+        const id =
+            Number(tile.dataset.id);
+
+        flashTile(id);
+
+        playerSequence.push(id);
+
+        const current =
+            playerSequence.length - 1;
+
+        if(
+            playerSequence[current] !==
+            sequence[current]
+        ){
+
+            lives--;
+
+            livesEl.textContent =
+                "❤️".repeat(lives);
+
+            if(lives <= 0){
+
+                gameOver();
+                return;
             }
+
+            playerSequence = [];
+
+            messageEl.textContent =
+                `Wrong! ${lives} lives left`;
+
+            setTimeout(()=>{
+                playSequence();
+            },1000);
+
+            return;
         }
-    }
-}
 
-setInterval(newGameState, 500);
+        if(
+            playerSequence.length ===
+            sequence.length
+        ){
 
-function newGameState() {
-    checkGrid();
-    if(pieceObj == null) {
-        pieceObj = generateRandomPiece();
-        renderPiece();
-    }
-    moveDown();
-} 
+            canClick = false;
 
-function moveDown() {
-    if(!collision(pieceObj.x,pieceObj.y+1))
-    pieceObj.y+=1;
-else {
-    for(let i=0; i<pieceObj.piece.length; i++) {
-        for(let j=0; j<pieceObj.piece[i].length; j++) {
-            if(pieceObj.piece[i][j] == 1) {
-                let p = pieceObj.x+j;
-                let q = pieceObj.y+i;
-                grid[q][p] = pieceObj.colourIndex;
-            }
+            messageEl.textContent =
+                "Correct!";
+
+            setTimeout(()=>{
+                nextLevel();
+            },1000);
         }
-        if(pieceObj.y ==0) {
-            alert("Game over!");
-            grid = generateGrid();
-            score = 0;
-        }
-    }
-    pieceObj = null;
-}
-    renderGrid();
-} 
 
-function moveRight() {
-    if(!collision(pieceObj.x+1,pieceObj.y))
-    pieceObj.x+=1
-    renderGrid();
-}
+    });
 
-function moveLeft() {
-    if(!collision(pieceObj.x-1,pieceObj.y))
-    pieceObj.x-=1
-    renderGrid();
-}
+});
 
-function rotate() {
-    let rotatedPiece = [];
-    let piece = pieceObj.piece;
-    for(let i=0; i<piece.length; i++) {
-        rotatedPiece.push([]);
-        for(let j=0; j<piece[i].length; j++) {
-            rotatedPiece[i].push[0];
-        }
-    }
-    for(let i=0; i<piece.length; i++) {
-        for(let j=0; j<piece[i].length; j++) {
-            rotatedPiece[i][j] = piece[j][i];
-        }
-    }
-    for(let i=0; i<rotatedPiece.length; i++) {
-        rotatedPiece[i] = rotatedPiece[i].reverse();
-    }
-    if(!collision(pieceObj.x,pieceObj.y,rotatedPiece))
-    pieceObj.piece = rotatedPiece
-renderGrid();
-}
-
-function collision(x, y, rotatedPiece) {
-    let piece = rotatedPiece || pieceObj.piece;
-    for(let i=0; i<piece.length; i++){
-        for(let j=0; j<piece[i].length; j++) {
-            if(piece[i][j] == 1) {
-                let p= x+j;
-                let q= y+i;
-                if(p>=0 && p<cols && q>=0 && q<rows) {
-                    if(grid[q][p]>0) {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
-function generateGrid() {
-    let grid = [];
-    for(let i=0; i<rows; i++) {
-        grid.push([]);
-        for(let j=0; j<cols; j++) {
-            grid[i].push(0);
-        }
-    } return grid
-}
-
-document.addEventListener("keydown", function(e){
-    let key = e.code;
-    if(key == "ArrowDown") {
-        moveDown();
-    } else if(key == "ArrowRight") {
-        moveRight();
-    } else if(key == "ArrowLeft") {
-        moveLeft();
-    } else if(key == "ArrowUp") {
-        rotate();
-    }
-})
-
-function checkGrid() {
-    let count = 0;
-    for(let i=0; i<grid.length; i++) {
-        let allFilled = true;
-        for(let j=0; j<grid[i].length; j++) {
-            if(grid[i][j] == 0) {
-                allFilled = false;
-            }
-        }
-        if(allFilled) {
-            grid.splice(i, 1);
-            grid.unshift([0,0,0,0,0,0,0,0,0,0]);
-            count++;
-        }
-    }
-    if(count == 1) {
-        score+=10;
-    } else if(count == 2) {
-        score+=30;
-    } else if(count == 3) {
-        score+=50;
-    } else if(count>3) {
-        score+=100;
-    }
-    scoreBoard.innerHTML = "Score: " + score;
-}
-
-function renderGrid() {
-    
-    for(let i=0; i<grid.length; i++) {
-        for(let j=0; j<grid[i].length; j++) {
-            ctx.fillStyle =colours[grid[i][j]];
-            ctx.fillRect(j, i, 1, 1)
-        }
-    }
-    renderPiece();
-}
-
+startBtn.addEventListener(
+    "click",
+    startGame
+);
