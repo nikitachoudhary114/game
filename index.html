@@ -3,12 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris game</title>
+    <title>Memory Forest</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h2>Score: 0</h2>
-    <canvas id="tetris" height="600" width="300"></canvas>
+
+<div class="container">
+
+    <h1>Memory Forest</h1>
+
+    <div class="stats">
+        <div class="card">
+            Level
+            <span id="level">0</span>
+        </div>
+
+        <div class="card">
+            Best
+            <span id="best">0</span>
+        </div>
+
+        <div class="card">
+            Lives
+            <span id="lives">❤️❤️❤️</span>
+        </div>
+    </div>
+
+    <div id="forest" class="forest">🌱</div>
+
+    <div class="board">
+        <div class="tile red" data-id="0"></div>
+        <div class="tile blue" data-id="1"></div>
+        <div class="tile green" data-id="2"></div>
+        <div class="tile yellow" data-id="3"></div>
+    </div>
+
+    <button id="startBtn">Start Game</button>
+
+    <p id="message" class="message">
+        Press Start To Begin
+    </p>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
-<script src="./script.js"></script>
 </html>
