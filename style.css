@@ -1,18 +1,155 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
 }
 
-body {
-    background-color: whitesmoke;
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    flex-direction: column;
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+        radial-gradient(circle at top,#1e293b,#0f172a 60%);
+    color:white;
 }
 
-#tetris {
-    background-color: white;
-    box-shadow: 0 0 10px 0 lightgray ;
+.container{
+    width:95%;
+    max-width:800px;
+    text-align:center;
+}
+
+h1{
+    font-size:3rem;
+    margin-bottom:20px;
+    background:linear-gradient(
+        90deg,
+        #22c55e,
+        #06b6d4
+    );
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.stats{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:15px;
+    margin-bottom:25px;
+}
+
+.card{
+    background:rgba(255,255,255,.08);
+    backdrop-filter:blur(15px);
+    padding:12px 20px;
+    border-radius:14px;
+    min-width:110px;
+    display:flex;
+    flex-direction:column;
+    gap:5px;
+}
+
+.card span{
+    font-size:1.2rem;
+    font-weight:bold;
+}
+
+.forest{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:repeat(2,180px);
+    gap:20px;
+    justify-content:center;
+    margin:auto;
+}
+
+.tile{
+    width:180px;
+    height:180px;
+    border-radius:25px;
+    cursor:pointer;
+    transition:.2s;
+    opacity:.85;
+}
+
+.tile:hover{
+    transform:scale(1.04);
+}
+
+.red{
+    background:#ef4444;
+}
+
+.blue{
+    background:#3b82f6;
+}
+
+.green{
+    background:#22c55e;
+}
+
+.yellow{
+    background:#facc15;
+}
+
+.active{
+    transform:scale(1.08);
+    opacity:1;
+    box-shadow:
+        0 0 25px white,
+        0 0 50px white,
+        0 0 90px currentColor;
+}
+
+button{
+    margin-top:25px;
+    padding:12px 30px;
+    border:none;
+    border-radius:12px;
+    background:#06b6d4;
+    color:white;
+    font-size:1rem;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#0891b2;
+}
+
+.message{
+    margin-top:20px;
+    font-size:1.1rem;
+}
+
+.gameover{
+    animation:pulse .6s infinite;
+}
+
+@keyframes pulse{
+    50%{
+        transform:scale(1.1);
+    }
+}
+
+@media(max-width:600px){
+
+    .board{
+        grid-template-columns:repeat(2,140px);
+    }
+
+    .tile{
+        width:140px;
+        height:140px;
+    }
+
+    h1{
+        font-size:2rem;
+    }
 }
